@@ -13,17 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This is a sample for a translation fulfillment webhook for an API.AI agent
+"""This is a sample for a translation fulfillment webhook for an Dialogflow agent
 
-This is meant to be used with the sample translate agent for API.AI, it uses
+This is meant to be used with the sample translate agent for Dialogflow, it uses
 the Google Cloud Translation API and requires an API key from an API project
 with the Google Cloud Translation API enabled.
 """
 
 import json
 import random
-from httplib import HTTPException
-from urllib2 import HTTPError, URLError
+from http.client import HTTPException
+from urllib.error import HTTPError, URLError
 
 from flask import Flask, jsonify, make_response, request
 from googleapiclient.discovery import build
@@ -40,41 +40,40 @@ from translate_response import (_TRANSLATE_ERROR, _TRANSLATE_INTO_W,
 # 1. Go to console.google.com create or use an existing project
 # 2. Enable the Cloud Translation API in the console for your project
 # 3. Create an API key in the credentials tab and paste it below
-API_KEY = 'PUT GOOGLE DEVELOPER KEY HERE'
+API_KEY = '<PASTE_API_KEY_HERE>'
 TRANSLATION_SERVICE = build('translate', 'v2', developerKey=API_KEY)
 
-APP = Flask(__name__)
-LOG = APP.logger
+app = Flask(__name__)
+log = app.logger
 
 
-@APP.route('/webhook', methods=['POST'])
+@app.route('/webhook', methods=['POST'])
 def webhook():
-    """This method handles the http requests for the API.AI webhook
+    """This method handles the http requests for the Dialogflow webhook
 
-    This is meant to be used in conjunction with the translate API.AI agent
+    This is meant to be used in conjunction with the translate Dialogflow agent
     """
 
     # Get request parameters
-    req = request.get_json(silent=True, force=True)
-    action = req.get('result').get('action')
+    req = request.get_json(force=True)
+    action = req.get('queryResult').get('action')
 
     # Check if the request is for the translate action
     if action == 'translate.text':
         # Get the parameters for the translation
-        text = req['result']['parameters'].get('text')
-        source_lang = req['result']['parameters'].get('lang-from')
-        target_lang = req['result']['parameters'].get('lang-to')
+        text = req['queryResult']['parameters'].get('text')
+        source_lang = req['queryResult']['parameters'].get('lang-from')
+        target_lang = req['queryResult']['parameters'].get('lang-to')
 
         # Fulfill the translation and get a response
         output = translate(text, source_lang, target_lang)
 
-        # Compose the response to API.AI
-        res = {'speech': output,
-               'displayText': output,
-               'contextOut': req['result']['contexts']}
+        # Compose the response to Dialogflow
+        res = {'fulfillmentText': output,
+               'outputContexts': req['queryResult']['outputContexts']}
     else:
         # If the request is not to the translate.text action throw an error
-        LOG.error('Unexpected action requested: %s', json.dumps(req))
+        log.error('Unexpected action requested: %s', json.dumps(req))
         res = {'speech': 'error', 'displayText': 'error'}
 
     return make_response(jsonify(res))
@@ -189,7 +188,7 @@ def validate_language(language):
 if __name__ == '__main__':
     PORT = 8080
 
-    APP.run(
+    app.run(
         debug=True,
         port=PORT,
         host='0.0.0.0'

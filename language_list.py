@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This is a sample for a translation fulfillment webhook for an API.AI agent
+"""This is a sample for a translation fulfillment webhook for an Dialogflow agent
 
-This is meant to be used with the sample translate agent for API.AI, it uses
+This is meant to be used with the sample translate agent for Dialogflow, it uses
 the Google Cloud Translation API and requires an API key from an API project
 with the Google Cloud Translation API enabled.
 """
